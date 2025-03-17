@@ -1,0 +1,17 @@
+{
+  "name": "ts80",
+  "version": "1.0.0",
+  "description": "GameBoy Emulator in TypeScript",
+  "license": "MIT",
+  "author": "Patrick DeLoughry",
+  "type": "commonjs",
+  "main": "src/main.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "devDependencies": {
+    "ts-loader": "^9.5.2",
+    "typescript": "^5.8.2",
+    "webpack-cli": "^6.0.1"
+  }
+}
