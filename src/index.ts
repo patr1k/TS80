@@ -5,15 +5,20 @@ window.onload = () => {
     gb.runTetris();
     gb.start();
 
-    const btn = document.getElementById('btnStartStop');
-    btn?.addEventListener('click', () => {
+    const btnStartStop = document.getElementById('btnStartStop');
+    const btnStep = document.getElementById('btnStep');
+    btnStartStop?.addEventListener('click', () => {
         if (gb.mode === 1) {
             gb.stop();
             gb.debug();
-            btn.innerText = "Start";
+            btnStartStop.innerText = "Start";
         } else {
             gb.start();
-            btn.innerText = "Stop";
+            btnStartStop.innerText = "Stop";
         }
+    });
+    btnStep?.addEventListener('click', () => {
+        if (gb.mode === 0)
+            gb.step();
     });
 };

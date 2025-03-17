@@ -1,5 +1,4 @@
-import { xor_A_r8 } from "./cpu/Block_2";
-import { HEX_BYTE, HEX_WORD, S8 } from "./cpu/Utils";
+import { HEX_BYTE, PTR_16, S8 } from "./cpu/Utils";
 import Memory from "./Memory";
 import { LCD_CONTROL, LCD_CTRL_BG_TILE_MAP_AREA, LCD_CTRL_BG_WND_ENABLE, LCD_CTRL_OBJ_ENABLE, LCD_CTRL_OBJ_SIZE, LCD_CTRL_PPU_ENABLE, LCD_CTRL_TILE_DATA_AREA, LCD_CTRL_WND_ENABLE, LCD_CTRL_WND_TILE_MAP_AREA } from "./ppu/Utils";
 
@@ -34,7 +33,7 @@ export default class PPU
         this.bg_layer.height = 288;
         this.bg_ctx = this.bg_layer.getContext('2d') as CanvasRenderingContext2D;
 
-        this.ctx.fillStyle = '#CADC9F';
+        this.ctx.fillStyle = '#FFFFFF';
         this.ctx.fillRect(0, 0, PPU.WIDTH, PPU.HEIGHT);
     }
 
@@ -52,22 +51,21 @@ export default class PPU
         pallete.push(PPU.PALLETE[(FF47 >> 4) & 0x03]);
         pallete.push(PPU.PALLETE[(FF47 >> 6) & 0x03]);
 
-        const LCDC = this.mem.read(LCD_CONTROL);
-        const lcd_enable = Boolean(LCDC & LCD_CTRL_PPU_ENABLE.mask);
-
+        const LCDC = this.mem.read(LCD_CONTROL[PTR_16]);
+        const lcd_enable = Boolean(LCDC & LCD_CTRL_PPU_ENABLE);
+        
         if (!lcd_enable) return;
 
-        const wnd_tile_map_area = (LCDC & LCD_CTRL_WND_TILE_MAP_AREA.mask) ? 0x9C00 : 0x9800;
-        const wnd_enable = Boolean(LCDC & LCD_CTRL_WND_ENABLE.mask);
-        const tile_data_area = (LCDC & LCD_CTRL_TILE_DATA_AREA.mask) ? 0x8000 : 0x9000;
-        const bg_tile_map_area = (LCDC & LCD_CTRL_BG_TILE_MAP_AREA.mask) ? 0x9C00 : 0x9800;
-        const obj_size = (LCDC & LCD_CTRL_OBJ_SIZE.mask) ? 8 : 16;
-        const obj_enable = Boolean(LCDC & LCD_CTRL_OBJ_ENABLE.mask);
-        const bg_wnd_enable = Boolean(LCDC & LCD_CTRL_BG_WND_ENABLE.mask);
+        const wnd_tile_map_area = (LCDC & LCD_CTRL_WND_TILE_MAP_AREA) ? 0x9C00 : 0x9800;
+        const wnd_enable = Boolean(LCDC & LCD_CTRL_WND_ENABLE);
+        const tile_data_area = (LCDC & LCD_CTRL_TILE_DATA_AREA) ? 0x8000 : 0x9000;
+        const bg_tile_map_area = (LCDC & LCD_CTRL_BG_TILE_MAP_AREA) ? 0x9C00 : 0x9800;
+        const obj_size = (LCDC & LCD_CTRL_OBJ_SIZE) ? 8 : 16;
+        const obj_enable = Boolean(LCDC & LCD_CTRL_OBJ_ENABLE);
+        const bg_wnd_enable = Boolean(LCDC & LCD_CTRL_BG_WND_ENABLE);
 
         let tile_data: Record<number, Uint8Array> = {};
-
-        if (wnd_tile_map_area) {
+        if (bg_wnd_enable) {
             for (let tile_y = 0; tile_y < 32; tile_y++) {
                 for (let tile_x = 0; tile_x < 32; tile_x++) {
                     const offset = bg_tile_map_area + (32 * tile_y) + tile_x;

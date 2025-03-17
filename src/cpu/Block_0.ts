@@ -1,4 +1,4 @@
-import { BYTE, COND, Device, R16, R16MEM, R8, S8, WORD, DECOMP } from "./Utils";
+import { BYTE, COND, Device, R16, R16MEM, R8, S8, WORD, DECOMP, HEX_BYTE, HEX_WORD } from "./Utils";
 
 function nop() {
     DECOMP('NOP');
@@ -12,7 +12,7 @@ function ld_r16_imm16(dev: Device, r16: R16) {
 }
 
 function ld_r16mem_A(dev: Device, r16mem: R16MEM) {
-    DECOMP(`LD [${r16mem}], A`)
+    DECOMP(`LD (${r16mem}), A`)
 
     if (r16mem === 'HL+') {
         dev.mem.write(dev.cpu.reg.HL, dev.cpu.reg.A);
@@ -26,7 +26,7 @@ function ld_r16mem_A(dev: Device, r16mem: R16MEM) {
 }
 
 function ld_A_r16mem(dev: Device, r16mem: R16MEM) {
-    DECOMP(`LD A, [${r16mem}]`)
+    DECOMP(`LD A, (${r16mem})`)
 
     if (r16mem === 'HL+') {
         dev.cpu.reg.A = dev.mem.read(dev.cpu.reg.HL);
@@ -41,7 +41,7 @@ function ld_A_r16mem(dev: Device, r16mem: R16MEM) {
 
 function ld_imm16_SP(dev: Device) {
     const a16 = dev.cpu.fetch_word();
-    DECOMP(`LD [$${a16.toString(16)}], SP`);
+    DECOMP(`LD ($${HEX_WORD(a16)}), SP`);
 
     dev.mem.write(a16, dev.cpu.reg.SP);
 }
@@ -100,7 +100,7 @@ function dec_r8(dev: Device, r8: R8) {
 
 function ld_r8_imm8(dev: Device, r8: R8) {
     const d8 = dev.cpu.fetch_byte();
-    DECOMP(`LD ${r8}, $${d8.toString(16)}`);
+    DECOMP(`LD ${r8}, $${HEX_BYTE(d8)}`);
 
     if (r8 === '[HL]') {
         dev.mem.write(dev.cpu.reg.HL, d8);

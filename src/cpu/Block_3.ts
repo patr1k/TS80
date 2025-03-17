@@ -1,8 +1,8 @@
-import { BYTE, COND, Device, R16STK, S8, WORD, DECOMP } from "./Utils";
+import { BYTE, COND, Device, R16STK, S8, WORD, DECOMP, HEX_WORD, HEX_BYTE } from "./Utils";
 
 function add_A_imm8(dev: Device) {
     const d8 = dev.cpu.fetch_byte();
-    DECOMP(`ADD A, $${d8.toString(16)}`);
+    DECOMP(`ADD A, $${HEX_BYTE(d8)}`);
 
     const result16 = WORD(dev.cpu.reg.A + d8);
     const result8 = BYTE(result16);
@@ -18,7 +18,7 @@ function add_A_imm8(dev: Device) {
 
 function adc_A_imm8(dev: Device) {
     const d8 = dev.cpu.fetch_byte();
-    DECOMP(`ADC A, $${d8.toString(16)}`);
+    DECOMP(`ADC A, $${HEX_BYTE(d8)}`);
 
     const result16 = WORD(dev.cpu.reg.A + d8 + (dev.cpu.reg.flag.C ? 1 : 0));
     const result8 = BYTE(result16);
@@ -34,7 +34,7 @@ function adc_A_imm8(dev: Device) {
 
 function sub_A_imm8(dev: Device) {
     const d8 = dev.cpu.fetch_byte();
-    DECOMP(`SUB A, $${d8.toString(16)}`);
+    DECOMP(`SUB A, $${HEX_BYTE(d8)}`);
 
     const result16 = WORD(dev.cpu.reg.A - d8);
     const result8 = BYTE(result16);
@@ -50,7 +50,7 @@ function sub_A_imm8(dev: Device) {
 
 function sbc_A_imm8(dev: Device) {
     const d8 = dev.cpu.fetch_byte();
-    DECOMP(`SUB A, $${d8.toString(16)}`);
+    DECOMP(`SUB A, $${HEX_BYTE(d8)}`);
 
     const result16 = WORD(dev.cpu.reg.A - d8 - (dev.cpu.reg.flag.C ? 1 : 0));
     const result8 = BYTE(result16);
@@ -66,7 +66,7 @@ function sbc_A_imm8(dev: Device) {
 
 function and_A_imm8(dev: Device) {
     const d8 = dev.cpu.fetch_byte();
-    DECOMP(`AND A, $${d8.toString(16)}`);
+    DECOMP(`AND A, $${HEX_BYTE(d8)}`);
 
     dev.cpu.reg.A &= d8;
     dev.cpu.reg.flag.N = false;
@@ -77,7 +77,7 @@ function and_A_imm8(dev: Device) {
 
 function xor_A_imm8(dev: Device) {
     const d8 = dev.cpu.fetch_byte();
-    DECOMP(`XOR A, $${d8.toString(16)}`);
+    DECOMP(`XOR A, $${HEX_BYTE(d8)}`);
 
     dev.cpu.reg.A ^= d8;
     dev.cpu.reg.flag.N = false;
@@ -88,7 +88,7 @@ function xor_A_imm8(dev: Device) {
 
 function or_A_imm8(dev: Device) {
     const d8 = dev.cpu.fetch_byte();
-    DECOMP(`OR A, $${d8.toString(16)}`);
+    DECOMP(`OR A, $${HEX_BYTE(d8)}`);
 
     dev.cpu.reg.A |= d8;
     dev.cpu.reg.flag.N = false;
@@ -99,7 +99,7 @@ function or_A_imm8(dev: Device) {
 
 function cp_A_imm8(dev: Device) {
     const d8 = dev.cpu.fetch_byte();
-    DECOMP(`CP A, $${d8.toString(16)}`);
+    DECOMP(`CP A, $${HEX_BYTE(d8)} | $${HEX_BYTE(dev.cpu.reg.A)}`);
 
     const result16 = WORD(dev.cpu.reg.A - d8);
     const result8 = BYTE(result16);
@@ -139,7 +139,7 @@ function reti(dev: Device) {
 
 function jp_cond_imm16(dev: Device, cond: COND) {
     const a16 = dev.cpu.fetch_word();
-    DECOMP(`JP ${cond}, $${a16.toString(16)}`);
+    DECOMP(`JP ${cond}, $${HEX_WORD(a16)}`);
 
     switch (cond) {
         case 'NZ': if (dev.cpu.reg.flag.Z) return; break;
@@ -153,7 +153,7 @@ function jp_cond_imm16(dev: Device, cond: COND) {
 
 function jp_imm16(dev: Device) {
     const a16 = dev.cpu.fetch_word();
-    DECOMP(`JP $${a16.toString(16)}`);
+    DECOMP(`JP $${HEX_WORD(a16)}`);
 
     dev.cpu.reg.PC = a16;
 }
@@ -166,7 +166,7 @@ function jp_HL(dev: Device) {
 
 function call_cond_imm16(dev: Device, cond: COND) {
     const a16 = dev.cpu.fetch_word();
-    DECOMP(`CALL ${cond}, $${a16.toString(16)}`);
+    DECOMP(`CALL ${cond}, $${HEX_WORD(a16)}`);
 
     switch (cond) {
         case 'NZ': if (dev.cpu.reg.flag.Z) return; break;
@@ -218,44 +218,45 @@ function push_r16(dev: Device, r16: R16STK) {
 
 function ldh_a8_A(dev: Device) {
     const a8 = dev.cpu.fetch_byte();
-    DECOMP(`LDH [$FF00 + $${a8.toString(16)}], A`);
+    DECOMP(`LD ($FF00 + $${HEX_WORD(a8)}), A`);
 
     dev.mem.write(0xFF00 | a8, dev.cpu.reg.A);
 }
 
 function ldh_Cmem_A(dev: Device) {
-    DECOMP(`LDH [$FF00 + C], A`);
+    DECOMP(`LD ($FF00 + C), A`);
     dev.mem.write(0xFF00 | dev.cpu.reg.C, dev.cpu.reg.A);
 }
 
 function ld_a16_A(dev: Device) {
     const a16 = dev.cpu.fetch_word();
-    DECOMP(`LD $${a16.toString(16)}, A`);
+    DECOMP(`LD ($${HEX_WORD(a16)}), A`);
 
     dev.mem.write(a16, dev.cpu.reg.A);
 }
 
 function ldh_A_a8(dev: Device) {
     const a8 = dev.cpu.fetch_byte();
-    DECOMP(`LDH A, [$FF00 + $${a8.toString(16)}]`);
+    DECOMP(`LD A, ($FF00 + $${HEX_BYTE(a8)})`);
 
-    dev.cpu.reg.A = dev.mem.read(0xFF | a8);
+    dev.cpu.reg.A = dev.mem.read(0xFF00 | a8);
 }
 
 function ldh_A_Cmem(dev: Device) {
-    DECOMP(`LDH A, [$FF00 + C]`);
+    DECOMP(`LD A, ($FF00 + C)`);
     dev.cpu.reg.A = dev.mem.read(0xFF00 | dev.cpu.reg.C);
 }
 
 function ld_A_a16(dev: Device) {
     const a16 = dev.cpu.fetch_word();
-    DECOMP(`LD A, $${a16.toString(16)}`);
+    DECOMP(`LD A, $${HEX_WORD(a16)}`);
 
     dev.cpu.reg.A = dev.mem.read(a16);
 }
 
 function di(dev: Device) {
     DECOMP('DI');
+    throw Error('DI');
     dev.cpu.IME = false;
 }
 

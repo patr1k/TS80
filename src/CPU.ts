@@ -4,7 +4,7 @@ import * as cpu_blk_2 from "./cpu/Block_2";
 import * as cpu_blk_3 from "./cpu/Block_3";
 import * as cpu_blk_3_ext from "./cpu/Block_3_ext";
 import Registers from "./cpu/Registers";
-import { CoreInstr, Device, MAKEWORD } from "./cpu/Utils";
+import { CoreInstr, Device, HEX_BYTE, HEX_WORD, MAKEWORD } from "./cpu/Utils";
 import Memory from "./Memory";
 
 export default class CPU
@@ -15,6 +15,8 @@ export default class CPU
     public IME: boolean;
     
     private mem: Memory;
+
+    public IR: number;
 
     private isa: CoreInstr[];
     private isa_ext: CoreInstr[];
@@ -27,6 +29,9 @@ export default class CPU
         this.reg = new Registers();
         this.HALT = false;
         this.IME = false;
+
+        this.IR = 0;
+
         this.isa = [
     /* 0x00 */ cpu_blk_0.nop,
     /* 0x01 */ (dev: Device) => cpu_blk_0.ld_r16_imm16(dev, 'BC'),
@@ -243,7 +248,7 @@ export default class CPU
     /* 0xC8 */ (dev: Device) => cpu_blk_3.ret_cond(dev, 'Z'),
     /* 0xC9 */ cpu_blk_3.ret,
     /* 0xCA */ (dev: Device) => cpu_blk_3.jp_cond_imm16(dev, 'Z'),
-    /* 0xCB */ (dev: Device) => this.isa_ext[dev.cpu.fetch_byte()](dev),
+    /* 0xCB */ this.ext_instr.bind(this),
     /* 0xCC */ (dev: Device) => cpu_blk_3.call_cond_imm16(dev, 'Z'),
     /* 0xCD */ cpu_blk_3.call_imm16,
     /* 0xCE */ cpu_blk_3.adc_A_imm8,
@@ -577,10 +582,16 @@ export default class CPU
     }
 
     tick() {
-        const instr = this.fetch_byte();
-        this.isa[instr](this.dev);
+        this.IR = this.fetch_byte();
+        this.isa[this.IR](this.dev);
 
         this.mem.tick();
+    }
+
+    private ext_instr() {
+        const instr = this.fetch_byte();
+        this.IR = (this.IR << 8) | instr;
+        this.isa_ext[instr](this.dev);
     }
 
     fetch_byte(): number {
@@ -612,5 +623,18 @@ export default class CPU
 
     hard_lock() {
         throw Error('CPU is hard locked');
+    }
+
+    debug() {
+        let txt = "CPU State:\n";
+        txt += 'A F = '+HEX_BYTE(this.reg.A)+' '+HEX_BYTE(this.reg.F)+"\n";
+        txt += 'B C = '+HEX_BYTE(this.reg.B)+' '+HEX_BYTE(this.reg.C)+"\n";
+        txt += 'D E = '+HEX_BYTE(this.reg.D)+' '+HEX_BYTE(this.reg.E)+"\n";
+        txt += 'H L = '+HEX_BYTE(this.reg.H)+' '+HEX_BYTE(this.reg.L)+"\n";
+        txt += 'PC = $'+HEX_WORD(this.reg.PC)+"\n";
+        txt += 'SP = $'+HEX_WORD(this.reg.SP)+"\n";
+        txt += 'IR = $'+(this.IR > 0xFF ? HEX_WORD(this.IR) : HEX_BYTE(this.IR))+"\n";
+        txt += 'Flags = '+(this.reg.flag.Z?'Z':'-')+(this.reg.flag.N?'N':'-')+(this.reg.flag.H?'H':'-')+(this.reg.flag.C?'C':'-')+"\n";
+        console.log(txt);
     }
 }

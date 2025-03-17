@@ -39,6 +39,18 @@ const R16MEM_idx = ['BC', 'DE', 'HL+', 'HL-'];
 type COND = 'NZ'|'Z'|'NC'|'C';
 const COND_idx = ['NZ', 'Z', 'NC', 'C'];
 
-const DECOMP = (text: string) => {};
+const StackTrace: string[] = [];
+const DECOMP = (text: string) => {
+    StackTrace.push(text);
+    if (StackTrace.length > 20)
+        StackTrace.shift();
+};
+//const DECOMP = (text: string) => console.log(text);
 
-export { MAKEWORD, HI, LO, S8, BYTE, WORD, CoreInstr, Device, R16_idx, R8_idx, R16STK_idx, R16MEM_idx, COND_idx, R8, R16, R16STK, R16MEM, COND, DECOMP, HEX_BYTE, HEX_WORD };
+const PTR_8 = 1;
+const PTR_16 = 0;
+
+export { 
+    MAKEWORD, HI, LO, S8, BYTE, WORD, CoreInstr, Device, R16_idx, R8_idx, R16STK_idx, R16MEM_idx, COND_idx, R8, R16, 
+    R16STK, R16MEM, COND, DECOMP, HEX_BYTE, HEX_WORD, PTR_8, PTR_16, StackTrace
+};

@@ -1,5 +1,6 @@
 import { HEX_BYTE, HEX_WORD } from "./cpu/Utils";
 import IO from "./IO";
+import MBC from "./MBC";
 import BootROM from "./roms/BootROM";
 import TetrisROM from "./roms/Tetris";
 
@@ -35,6 +36,9 @@ export default class Memory
     // Interrupt Enable Register (0xFFFF)
     private IER: number;
 
+    // Multi-Bank Cartridge Chip
+    private MBC: MBC;
+
     // Boot ROM Data
     private BootROM: Uint8Array;
 
@@ -52,6 +56,7 @@ export default class Memory
         this.IO = new IO();
         this.HRAM = new Uint8Array(0x80);
         this.IER = 0;
+        this.MBC = new MBC();
 
         this.BootROM = BootROM;
         this.isBootRomMapped = false;
@@ -74,7 +79,7 @@ export default class Memory
         } else if (addr < 0xA000) {
             return this.VRAM_Banks[0][addr - 0x8000];
         } else if (addr < 0xC000) {
-            throw Error("Cannot read from external RAM");
+            throw Error(`Cannot read from external RAM: $${HEX_WORD(addr)}`);
             return this.XRAM_Banks[0][addr - 0xA000];
         } else if (addr < 0xD000) {
             return this.WRAM[addr - 0xC000];
@@ -85,7 +90,7 @@ export default class Memory
         } else if (addr < 0xFEA0) {
             return this.OAM[addr - 0xFE00];
         } else if (addr < 0xFF00) {
-            throw Error("Cannot read from unused address space");
+            throw Error(`Cannot read from unused address space: $${HEX_WORD(addr)}`);
         } else if (addr < 0xFF80) {
             return this.IO.read(addr - 0xFF00);
         } else if (addr < 0xFFFF) {
@@ -99,11 +104,11 @@ export default class Memory
 
     write(addr: number, value: number) {
         if (addr < 0x8000) {
-            throw Error("Cannot write to ROM address space");
+            this.MBC.write(addr, value);
         } else if (addr < 0xA000) {
             this.VRAM_Banks[0][addr - 0x8000] = value;
         } else if (addr < 0xC000) {
-            throw Error("Cannot write to external RAM");
+            throw Error(`Cannot write to external RAM: $${HEX_WORD(addr)}`);
             return this.XRAM_Banks[0][addr - 0xA000];
         } else if (addr < 0xD000) {
             this.WRAM[addr - 0xC000] = value;
@@ -114,7 +119,7 @@ export default class Memory
         } else if (addr < 0xFEA0) {
             this.OAM[addr - 0xFE00] = value;
         } else if (addr < 0xFF00) {
-            throw Error("Cannot read from unused address space");
+            // Unused space... but apparently some games write to this
         } else if (addr < 0xFF80) {
             this.IO.write(addr - 0xFF00, value);
         } else if (addr < 0xFFFF) {
@@ -122,7 +127,7 @@ export default class Memory
         } else if (addr === 0xFFFF) {
             this.IER = value;
         } else {
-            throw Error(`Cannot write to out-of-scope address space: 0x${addr.toString(16)}`);
+            throw Error(`Cannot write to out-of-scope address space: $${HEX_WORD(addr)}`);
         }
     }
 

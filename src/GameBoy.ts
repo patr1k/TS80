@@ -1,7 +1,7 @@
 import CPU from "./CPU";
+import { StackTrace } from "./cpu/Utils";
 import Memory from "./Memory";
 import PPU from "./PPU";
-import { LCD_CONTROL } from "./ppu/Utils";
 
 enum GBMode {
     STOPPED = 0,
@@ -16,6 +16,7 @@ export default class GameBoy
     mode: GBMode;
     fps: number;
     fps_timer: NodeJS.Timeout|null = null;
+    m_cycle: number;
 
     constructor() {
         this.mem = new Memory();
@@ -23,10 +24,11 @@ export default class GameBoy
         this.ppu = new PPU(this.mem);
         this.mode = GBMode.STOPPED;
         this.fps = 0;
+        this.m_cycle = 0;
     }
 
     init() {
-        this.mem.write(LCD_CONTROL, 0x91);
+
     }
 
     runTetris() {
@@ -39,10 +41,20 @@ export default class GameBoy
         this.mode = GBMode.RUNNING;
         const runFrameCycle = () => {
             let t1 = performance.now();
-            for (let i = 0; i < 17556; i++) {
-                this.cpu.tick();
-            }
-            this.ppu.render();
+            try {
+                while (this.m_cycle++ < 17556 && this.mode === GBMode.RUNNING) {
+                    this.cpu.tick();
+                }
+                this.m_cycle = 0;
+                this.ppu.render();
+            } catch (e) {
+                console.error(e);
+                this.stack_trace();
+                const btn = document.getElementById('btnStartStop');
+                if (btn)
+                    btn.innerText = 'Start';
+                this.stop();
+            } 
             this.fps++;
             let elapsed = performance.now() - t1;
             while (elapsed < 16.74) {
@@ -64,6 +76,24 @@ export default class GameBoy
         this.mode = GBMode.STOPPED;
         if (this.fps_timer)
             clearTimeout(this.fps_timer);
+        this.stack_trace();
+    }
+
+    step() {
+        this.cpu.tick();
+        console.log(StackTrace[StackTrace.length - 1]);
+        this.m_cycle++;
+        if (this.m_cycle === 17556) {
+            this.m_cycle = 0;
+            this.ppu.render();
+        }
+    }
+
+    stack_trace() {
+        for (let idx in StackTrace) {
+            console.log('trace: '+StackTrace[idx]);
+        }
+        this.cpu.debug();
     }
 
     debug() {

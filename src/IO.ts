@@ -1,11 +1,15 @@
+import { HEX_BYTE, PTR_8 } from "./cpu/Utils";
+import { LCD_CONTROL, LCD_Y_COORD } from "./ppu/Utils";
 import { TAC_CLK_SPEEDS, TIMER_DIV, TIMER_TAC, TIMER_TIMA, TIMER_TMA } from "./Timer";
 
 export default class IO 
 {
     private mem: Uint8Array;
+    private ppu_dot: number;
 
     constructor() {
         this.mem = new Uint8Array(0x4C);
+        this.ppu_dot = 0;
     }
 
     write(addr: number, value: number) {
@@ -21,6 +25,17 @@ export default class IO
     }
 
     tick() {
+        this.ppu_dot += 4;
+        if (this.ppu_dot > 70224) {
+            this.ppu_dot = 0;
+            this.mem[LCD_Y_COORD[PTR_8]] = 0;
+        } else {
+            if ((this.ppu_dot % 456) === 0) {
+                this.mem[LCD_Y_COORD[PTR_8]]++;
+            }
+        }
+
+        // Timer IO
         this.mem[TIMER_DIV]++;
 
         const TAC = this.mem[TIMER_TAC];
