@@ -1,4 +1,5 @@
 import { HEX_BYTE, PTR_16, S8 } from "./cpu/Utils";
+import GameBoy from "./GameBoy";
 import Memory from "./Memory";
 import { LCD_CONTROL, LCD_CTRL_BG_TILE_MAP_AREA, LCD_CTRL_BG_WND_ENABLE, LCD_CTRL_OBJ_ENABLE, LCD_CTRL_OBJ_SIZE, LCD_CTRL_PPU_ENABLE, LCD_CTRL_TILE_DATA_AREA, LCD_CTRL_WND_ENABLE, LCD_CTRL_WND_TILE_MAP_AREA } from "./ppu/Utils";
 
@@ -22,8 +23,8 @@ export default class PPU
         "#31684f"
     ];
 
-    constructor(mem: Memory) {
-        this.mem = mem;
+    constructor(dev: GameBoy) {
+        this.mem = dev.mem;
 
         this.canvas = document.getElementById('screen') as HTMLCanvasElement;
         this.ctx = this.canvas.getContext('2d') as CanvasRenderingContext2D;
@@ -97,6 +98,9 @@ export default class PPU
             this.ctx.drawImage(this.bg_layer, -SCX, -SCY); 
 
             // TODO: Render window
+        } else {
+            this.ctx.fillStyle = '#FFFFFF';
+            this.ctx.fillRect(0, 0, PPU.WIDTH, PPU.HEIGHT);
         }
 
         if (obj_enable) {

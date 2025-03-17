@@ -115,6 +115,7 @@ function sra_r8(dev: Device, r8: R8) {
 
 function swap_r8(dev: Device, r8: R8) {
     DECOMP(`SWAP ${r8}`);
+    
     let reg = r8 === '[HL]' ? dev.mem.read(dev.cpu.reg.HL) : dev.cpu.reg[r8];
 
     reg = (reg >> 4) | (reg << 4);
@@ -123,7 +124,7 @@ function swap_r8(dev: Device, r8: R8) {
         dev.mem.write(dev.cpu.reg.HL, reg);
     else
         dev.cpu.reg[r8] = reg;
-
+        
     dev.cpu.reg.flag.Z = reg === 0;
     dev.cpu.reg.flag.N = false;
     dev.cpu.reg.flag.H = false;

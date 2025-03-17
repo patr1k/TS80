@@ -99,7 +99,7 @@ function or_A_imm8(dev: Device) {
 
 function cp_A_imm8(dev: Device) {
     const d8 = dev.cpu.fetch_byte();
-    DECOMP(`CP A, $${HEX_BYTE(d8)} | $${HEX_BYTE(dev.cpu.reg.A)}`);
+    DECOMP(`CP A, $${HEX_BYTE(d8)}`);
 
     const result16 = WORD(dev.cpu.reg.A - d8);
     const result8 = BYTE(result16);
@@ -256,7 +256,6 @@ function ld_A_a16(dev: Device) {
 
 function di(dev: Device) {
     DECOMP('DI');
-    throw Error('DI');
     dev.cpu.IME = false;
 }
 

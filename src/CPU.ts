@@ -4,7 +4,8 @@ import * as cpu_blk_2 from "./cpu/Block_2";
 import * as cpu_blk_3 from "./cpu/Block_3";
 import * as cpu_blk_3_ext from "./cpu/Block_3_ext";
 import Registers from "./cpu/Registers";
-import { CoreInstr, Device, HEX_BYTE, HEX_WORD, MAKEWORD } from "./cpu/Utils";
+import { CoreInstr, DECOMP, Device, HEX_BYTE, HEX_WORD, MAKEWORD } from "./cpu/Utils";
+import GameBoy from "./GameBoy";
 import Memory from "./Memory";
 
 export default class CPU
@@ -13,19 +14,16 @@ export default class CPU
 
     public HALT: boolean;
     public IME: boolean;
-    
-    private mem: Memory;
 
     public IR: number;
 
     private isa: CoreInstr[];
     private isa_ext: CoreInstr[];
 
-    private dev: Device;
+    private dev: GameBoy;
 
-    constructor(mem: Memory) {
-        this.mem = mem;
-        this.dev = { cpu: this, mem };
+    constructor(dev: GameBoy) {
+        this.dev = dev;
         this.reg = new Registers();
         this.HALT = false;
         this.IME = false;
@@ -584,14 +582,14 @@ export default class CPU
     tick() {
         this.IR = this.fetch_byte();
         
-        if (this.IR > 0xFF && this.mem.IsBootRomMapped) {
+        if (this.IR > 0xFF && this.dev.mem.IsBootRomMapped) {
             // Unmap the boot ROM once we move past it
-            this.mem.IsBootRomMapped = false;
+            this.dev.mem.IsBootRomMapped = false;
         }
 
         this.isa[this.IR](this.dev);
 
-        this.mem.tick();
+        this.dev.mem.tick();
     }
 
     private ext_instr() {
@@ -601,34 +599,41 @@ export default class CPU
     }
 
     fetch_byte(): number {
-        return this.mem.read(this.reg.PC++);
+        return this.dev.mem.read(this.reg.PC++);
     }
 
     fetch_word(): number {
-        const lo = this.mem.read(this.reg.PC++);
-        const hi = this.mem.read(this.reg.PC++);
+        const lo = this.dev.mem.read(this.reg.PC++);
+        const hi = this.dev.mem.read(this.reg.PC++);
         return MAKEWORD(hi, lo);
     }
 
     pop_byte(): number {
-        return this.mem.read(this.reg.SP++);
+        return this.dev.mem.read(this.reg.SP++);
     }
 
     pop_word(): number {
-        return this.mem.read(this.reg.SP++) | (this.mem.read(this.reg.SP++) << 8);
+        return this.dev.mem.read(this.reg.SP++) | (this.dev.mem.read(this.reg.SP++) << 8);
     }
 
     push_byte(val: number) {
-        this.mem.write(--this.reg.SP, val);
+        this.dev.mem.write(--this.reg.SP, val);
     }
 
     push_word(val: number) {
-        this.mem.write(--this.reg.SP, val >> 8);
-        this.mem.write(--this.reg.SP, val & 0xFF);
+        this.dev.mem.write(--this.reg.SP, val >> 8);
+        this.dev.mem.write(--this.reg.SP, val & 0xFF);
     }
 
     hard_lock() {
         throw Error('CPU is hard locked');
+    }
+
+    interrupt(a16: number) {
+        DECOMP(`INTERRUPT $${a16.toString(16)}`);
+    
+        this.push_word(this.reg.PC);
+        this.reg.PC = a16;
     }
 
     debug() {

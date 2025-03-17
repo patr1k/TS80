@@ -1,0 +1,10 @@
+const INT_IF = [0xFF0F, 0x0F];
+const INT_IE = [0xFFFF, 0xFF];
+
+const INT_VBLANK = 0x01;
+const INT_STAT = 0x02;
+const INT_TIMER = 0x04;
+const INT_SERIAL = 0x08;
+const INT_JOYPAD = 0x016;
+
+export { INT_IF, INT_IE, INT_VBLANK, INT_STAT, INT_TIMER, INT_SERIAL, INT_JOYPAD };

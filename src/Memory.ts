@@ -1,4 +1,6 @@
+import CPU from "./CPU";
 import { HEX_BYTE, HEX_WORD } from "./cpu/Utils";
+import GameBoy from "./GameBoy";
 import IO from "./IO";
 import MBC from "./MBC";
 import BootROM from "./roms/BootROM";
@@ -6,6 +8,9 @@ import TetrisROM from "./roms/Tetris";
 
 export default class Memory 
 {
+    // CPU reference
+    private dev: GameBoy;
+
     // Cart ROM (0x0000 - 0x3FFF)
     private ROM: Uint8Array;
 
@@ -45,7 +50,8 @@ export default class Memory
     // Is the Boot ROM currently mapped?
     public IsBootRomMapped: boolean;
 
-    constructor() {
+    constructor(dev: GameBoy) {
+        this.dev = dev;
         this.ROM = new Uint8Array(0x4000);
         this.ROM_Banks = [new Uint8Array(0x4000)];
         this.VRAM_Banks = [new Uint8Array(0x2000)];
@@ -53,7 +59,7 @@ export default class Memory
         this.WRAM = new Uint8Array(0x1000);
         this.WRAM_Banks = [new Uint8Array(0x1000)];
         this.OAM = new Uint8Array(0xA0);
-        this.IO = new IO();
+        this.IO = new IO(dev);
         this.HRAM = new Uint8Array(0x80);
         this.IER = 0;
         this.MBC = new MBC();

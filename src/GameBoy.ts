@@ -19,16 +19,16 @@ export default class GameBoy
     m_cycle: number;
 
     constructor() {
-        this.mem = new Memory();
-        this.cpu = new CPU(this.mem);
-        this.ppu = new PPU(this.mem);
+        this.mem = new Memory(this);
+        this.cpu = new CPU(this);
+        this.ppu = new PPU(this);
         this.mode = GBMode.STOPPED;
         this.fps = 0;
         this.m_cycle = 0;
     }
 
     init() {
-
+        this.mem.write(0xFF00, 0xCF);
     }
 
     runTetris() {
