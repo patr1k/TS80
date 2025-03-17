@@ -43,7 +43,7 @@ export default class Memory
     private BootROM: Uint8Array;
 
     // Is the Boot ROM currently mapped?
-    private isBootRomMapped: boolean;
+    public IsBootRomMapped: boolean;
 
     constructor() {
         this.ROM = new Uint8Array(0x4000);
@@ -59,18 +59,18 @@ export default class Memory
         this.MBC = new MBC();
 
         this.BootROM = BootROM;
-        this.isBootRomMapped = false;
+        this.IsBootRomMapped = false;
     }
 
     loadTetris() {
-        this.isBootRomMapped = true;
+        this.IsBootRomMapped = true;
         this.ROM.set(TetrisROM.slice(0, 0x4000), 0);
         this.ROM_Banks[0].set(TetrisROM.slice(0x4000), 0);
     }
 
     read(addr: number): number {
         if (addr < 0x4000) {
-            if (addr < 0x100 && this.isBootRomMapped)
+            if (addr < 0x100 && this.IsBootRomMapped)
                 return this.BootROM[addr];
             else
                 return this.ROM[addr];

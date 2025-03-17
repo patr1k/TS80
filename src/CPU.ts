@@ -583,6 +583,12 @@ export default class CPU
 
     tick() {
         this.IR = this.fetch_byte();
+        
+        if (this.IR > 0xFF && this.mem.IsBootRomMapped) {
+            // Unmap the boot ROM once we move past it
+            this.mem.IsBootRomMapped = false;
+        }
+
         this.isa[this.IR](this.dev);
 
         this.mem.tick();
