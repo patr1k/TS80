@@ -8,6 +8,15 @@ const S8 = (n: number): number => (0x80 & n) ? (0x7F & n) - 128 : n;
 const BYTE = (n: number): number => n & 0xFF;
 const WORD = (n: number): number => n & 0xFFFF;
 
+const HEX_BYTE = (n: number): string => {
+    const str = n.toString(16).toUpperCase();
+    return (str.length === 1) ? '0'+str : str;
+};
+const HEX_WORD = (n: number): string => {
+    const str = n.toString(16).toUpperCase();
+    return (str.length < 4) ? '0'.repeat(4 - str.length)+str : str;
+};
+
 type CoreInstr = (dev: Device) => void;
 
 interface Device {
@@ -32,4 +41,4 @@ const COND_idx = ['NZ', 'Z', 'NC', 'C'];
 
 const DECOMP = (text: string) => {};
 
-export { MAKEWORD, HI, LO, S8, BYTE, WORD, CoreInstr, Device, R16_idx, R8_idx, R16STK_idx, R16MEM_idx, COND_idx, R8, R16, R16STK, R16MEM, COND, DECOMP };
+export { MAKEWORD, HI, LO, S8, BYTE, WORD, CoreInstr, Device, R16_idx, R8_idx, R16STK_idx, R16MEM_idx, COND_idx, R8, R16, R16STK, R16MEM, COND, DECOMP, HEX_BYTE, HEX_WORD };

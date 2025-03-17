@@ -1,3 +1,5 @@
+import { HEX_BYTE, HEX_WORD } from "./cpu/Utils";
+import IO from "./IO";
 import BootROM from "./roms/BootROM";
 import TetrisROM from "./roms/Tetris";
 
@@ -25,7 +27,7 @@ export default class Memory
     private OAM: Uint8Array;
 
     // I/O Ports (0xFF00 - 0xFF7F)
-    private IO: Uint8Array;
+    private IO: IO;
 
     // High RAM (0xFF80 - 0xFFFE)
     private HRAM: Uint8Array;
@@ -33,7 +35,10 @@ export default class Memory
     // Interrupt Enable Register (0xFFFF)
     private IER: number;
 
+    // Boot ROM Data
     private BootROM: Uint8Array;
+
+    // Is the Boot ROM currently mapped?
     private isBootRomMapped: boolean;
 
     constructor() {
@@ -44,7 +49,7 @@ export default class Memory
         this.WRAM = new Uint8Array(0x1000);
         this.WRAM_Banks = [new Uint8Array(0x1000)];
         this.OAM = new Uint8Array(0xA0);
-        this.IO = new Uint8Array(0x4C);
+        this.IO = new IO();
         this.HRAM = new Uint8Array(0x80);
         this.IER = 0;
 
@@ -82,7 +87,7 @@ export default class Memory
         } else if (addr < 0xFF00) {
             throw Error("Cannot read from unused address space");
         } else if (addr < 0xFF80) {
-            return this.IO[addr - 0xFF00];
+            return this.IO.read(addr - 0xFF00);
         } else if (addr < 0xFFFF) {
             return this.HRAM[addr - 0xFF80];
         } else if (addr === 0xFFFF) {
@@ -111,7 +116,7 @@ export default class Memory
         } else if (addr < 0xFF00) {
             throw Error("Cannot read from unused address space");
         } else if (addr < 0xFF80) {
-            this.IO[addr - 0xFF00] = value;
+            this.IO.write(addr - 0xFF00, value);
         } else if (addr < 0xFFFF) {
             this.HRAM[addr - 0xFF80] = value;
         } else if (addr === 0xFFFF) {
@@ -129,5 +134,30 @@ export default class Memory
     dec(addr: number) {
         let val = this.read(addr);
         this.write(addr, (val - 1) & 0xFF);
+    }
+
+    vram_slice(src: number, len: number): Uint8Array {
+        return this.VRAM_Banks[0].slice(src - 0x8000, (src + len) - 0x8000);
+    }
+
+    tick() {
+        this.IO.tick();
+    }
+
+    debug() {
+        const memtxt = document.getElementById('memdbg');
+        if (!memtxt) return;
+
+        let txt = '      0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F';
+        let addr = 0x8000;
+        for (let i = 0; i < 0x2000; i++) {
+            if ((i % 0x10) === 0) {
+                txt += "\n";
+                txt += HEX_WORD(addr) + ' ';
+                addr += 0x10;
+            }
+            txt += HEX_BYTE(this.VRAM_Banks[0][i]) + ' ';
+        }
+        memtxt.innerHTML = txt;
     }
 }

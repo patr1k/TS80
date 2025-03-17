@@ -66,22 +66,36 @@ function add_HL_r16(dev: Device, r16: R16) {
 
 function inc_r8(dev: Device, r8: R8) {
     DECOMP(`INC ${r8}`);
+    const reg = r8 === '[HL]' ? dev.mem.read(dev.cpu.reg.HL) : dev.cpu.reg[r8];
 
-    if (r8 === '[HL]') {
-        dev.mem.inc(dev.cpu.reg.HL);
-    } else {
-        dev.cpu.reg[r8] = BYTE(dev.cpu.reg[r8] + 1);
-    }
+    const result8 = BYTE(reg + 1);
+    const half = (reg % 0x0F) === 0x0F;
+
+    if (r8 === '[HL]')
+        dev.mem.write(dev.cpu.reg.HL, result8);
+    else
+        dev.cpu.reg[r8] = result8;
+
+    dev.cpu.reg.flag.Z = result8 === 0;
+    dev.cpu.reg.flag.N = false;
+    dev.cpu.reg.flag.H = half;
 }
 
 function dec_r8(dev: Device, r8: R8) {
     DECOMP(`DEC ${r8}`);
+    const reg = r8 === '[HL]' ? dev.mem.read(dev.cpu.reg.HL) : dev.cpu.reg[r8];
 
-    if (r8 === '[HL]') {
-        dev.mem.dec(dev.cpu.reg.HL);
-    } else {
-        dev.cpu.reg[r8] = BYTE(dev.cpu.reg[r8] - 1);
-    }
+    const result8 = BYTE(reg - 1);
+    const half = (reg % 0x0F) === 0;
+
+    if (r8 === '[HL]')
+        dev.mem.write(dev.cpu.reg.HL, result8);
+    else
+        dev.cpu.reg[r8] = result8;
+
+    dev.cpu.reg.flag.Z = result8 === 0;
+    dev.cpu.reg.flag.N = true;
+    dev.cpu.reg.flag.H = half;
 }
 
 function ld_r8_imm8(dev: Device, r8: R8) {
@@ -209,10 +223,10 @@ function jr_cond_r8(dev: Device, cond: COND) {
     DECOMP(`JR ${cond}, ${r8}`);
 
     switch (cond) {
-        case 'NZ': if (dev.cpu.reg.flag.Z) return;
-        case 'Z': if (!dev.cpu.reg.flag.Z) return;
-        case 'NC': if (dev.cpu.reg.flag.C) return;
-        case 'C': if (!dev.cpu.reg.flag.C) return;
+        case 'NZ': if (dev.cpu.reg.flag.Z) return; break;
+        case 'Z': if (!dev.cpu.reg.flag.Z) return; break;
+        case 'NC': if (dev.cpu.reg.flag.C) return; break;
+        case 'C': if (!dev.cpu.reg.flag.C) return; break;
     }
 
     dev.cpu.reg.PC += r8;

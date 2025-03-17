@@ -120,10 +120,10 @@ function ret(dev: Device) {
 function ret_cond(dev: Device, cond: COND) {
     DECOMP('RET');
     switch (cond) {
-        case 'NZ': if (dev.cpu.reg.flag.Z) return;
-        case 'Z': if (!dev.cpu.reg.flag.Z) return;
-        case 'NC': if (dev.cpu.reg.flag.C) return;
-        case 'C': if (!dev.cpu.reg.flag.C) return;
+        case 'NZ': if (dev.cpu.reg.flag.Z) return; break;
+        case 'Z': if (!dev.cpu.reg.flag.Z) return; break;
+        case 'NC': if (dev.cpu.reg.flag.C) return; break;
+        case 'C': if (!dev.cpu.reg.flag.C) return; break;
     }
     dev.cpu.reg.PC = dev.cpu.pop_word();
 }
@@ -142,10 +142,10 @@ function jp_cond_imm16(dev: Device, cond: COND) {
     DECOMP(`JP ${cond}, $${a16.toString(16)}`);
 
     switch (cond) {
-        case 'NZ': if (dev.cpu.reg.flag.Z) return;
-        case 'Z': if (!dev.cpu.reg.flag.Z) return;
-        case 'NC': if (dev.cpu.reg.flag.C) return;
-        case 'C': if (!dev.cpu.reg.flag.C) return;
+        case 'NZ': if (dev.cpu.reg.flag.Z) return; break;
+        case 'Z': if (!dev.cpu.reg.flag.Z) return; break;
+        case 'NC': if (dev.cpu.reg.flag.C) return; break;
+        case 'C': if (!dev.cpu.reg.flag.C) return; break;
     }
 
     dev.cpu.reg.PC = a16;
@@ -169,10 +169,10 @@ function call_cond_imm16(dev: Device, cond: COND) {
     DECOMP(`CALL ${cond}, $${a16.toString(16)}`);
 
     switch (cond) {
-        case 'NZ': if (dev.cpu.reg.flag.Z) return;
-        case 'Z': if (!dev.cpu.reg.flag.Z) return;
-        case 'NC': if (dev.cpu.reg.flag.C) return;
-        case 'C': if (!dev.cpu.reg.flag.C) return;
+        case 'NZ': if (dev.cpu.reg.flag.Z) return; break;
+        case 'Z': if (!dev.cpu.reg.flag.Z) return; break;
+        case 'NC': if (dev.cpu.reg.flag.C) return; break;
+        case 'C': if (!dev.cpu.reg.flag.C) return; break;
     }
 
     dev.cpu.push_word(dev.cpu.reg.PC);

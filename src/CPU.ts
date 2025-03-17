@@ -579,6 +579,8 @@ export default class CPU
     tick() {
         const instr = this.fetch_byte();
         this.isa[instr](this.dev);
+
+        this.mem.tick();
     }
 
     fetch_byte(): number {

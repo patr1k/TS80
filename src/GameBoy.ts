@@ -1,6 +1,7 @@
 import CPU from "./CPU";
 import Memory from "./Memory";
 import PPU from "./PPU";
+import { LCD_CONTROL } from "./ppu/Utils";
 
 enum GBMode {
     STOPPED = 0,
@@ -24,7 +25,12 @@ export default class GameBoy
         this.fps = 0;
     }
 
+    init() {
+        this.mem.write(LCD_CONTROL, 0x91);
+    }
+
     runTetris() {
+        this.init();
         this.mem.loadTetris();
     }
 
@@ -54,8 +60,13 @@ export default class GameBoy
     }
 
     stop() {
+        console.log('Stopped Emulation');
         this.mode = GBMode.STOPPED;
         if (this.fps_timer)
             clearTimeout(this.fps_timer);
+    }
+
+    debug() {
+        this.mem.debug();
     }
 }
