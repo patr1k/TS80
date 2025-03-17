@@ -1,5 +1,5 @@
-Sprocket
-========
+TS80
+====
 
 **Gameboy Emulator in TypeScript/HTML5**
 
